@@ -22,6 +22,8 @@
 #include <QApplication>
 #include <QTimer>
 #include <QQmlApplicationEngine>
+#include <QElapsedTimer>
+#include <cstdint>
 
 #include "LinkConfiguration.h"
 #include "LinkManager.h"
@@ -101,6 +103,11 @@ public:
     static QString cachedParameterMetaDataFile(void);
     static QString cachedAirframeMetaDataFile(void);
 
+    void            setLanguage();
+    QQuickItem*     mainRootWindow();
+
+    //uint64_t        msecsSinceBoot(void) { return _msecsElapsedTime.elapsed(); }
+
 public slots:
     /// You can connect to this slot to show an information message box from a different thread.
     void informationMessageBoxOnMainThread(const QString& title, const QString& msg);
@@ -125,6 +132,8 @@ signals:
     /// This is connected to MAVLinkProtocol::checkForLostLogFiles. We signal this to ourselves to call the slot
     /// on the MAVLinkProtocol thread;
     void checkForLostLogFiles(void);
+
+    void languageChanged        (const QLocale locale);
 
 public:
     // Although public, these methods are internal and should only be called by UnitTest code
@@ -188,7 +197,7 @@ private:
     GPSRTKFactGroup*    _gpsRtkFactGroup;
 
     QGCToolbox* _toolbox;
-
+	QQuickItem*         _mainRootWindow         = nullptr;
     QTranslator _QGCTranslator;
 
     bool _bluetoothAvailable;

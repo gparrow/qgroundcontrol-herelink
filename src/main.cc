@@ -15,10 +15,12 @@
  *
  */
 
+#include "QGC.h"
 #include <QtGlobal>
 #include <QApplication>
 #include <QIcon>
 #include <QSslSocket>
+#include <QMessageBox>
 #include <QProcessEnvironment>
 #include <QHostAddress>
 #include <QUdpSocket>
@@ -26,6 +28,9 @@
 #include <QStringListModel>
 #include "QGCApplication.h"
 #include "AppMessages.h"
+#include <QtAndroidExtras/QtAndroidExtras>
+
+
 
 #ifndef __mobile__
     #include "QGCSerialPortInfo.h"
@@ -82,6 +87,82 @@ int WindowsCrtReportHook(int reportType, char* message, int* returnValue)
 #include <jni.h>
 #include "qserialport.h"
 
+static jobject _class_loader = nullptr;
+static jobject _context = nullptr;
+
+//-----------------------------------------------------------------------------
+extern "C" {
+    void gst_amc_jni_set_java_vm(JavaVM *java_vm);
+
+    jobject gst_android_get_application_class_loader(void)
+    {
+        return _class_loader;
+    }
+}
+
+//-----------------------------------------------------------------------------
+static void
+gst_android_init(JNIEnv* env, jobject context)
+{
+    jobject class_loader = nullptr;
+
+    jclass context_cls = env->GetObjectClass(context);
+    if (!context_cls) {
+        return;
+    }
+
+    jmethodID get_class_loader_id = env->GetMethodID(context_cls, "getClassLoader", "()Ljava/lang/ClassLoader;");
+    if (env->ExceptionCheck()) {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return;
+    }
+
+    class_loader = env->CallObjectMethod(context, get_class_loader_id);
+    if (env->ExceptionCheck()) {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return;
+    }
+
+    _context = env->NewGlobalRef(context);
+    _class_loader = env->NewGlobalRef (class_loader);
+}
+
+//-----------------------------------------------------------------------------
+static const char kJniClassName[] {"org/mavlink/qgroundcontrol/QGCActivity"};
+
+void setNativeMethods(void)
+{
+    JNINativeMethod javaMethods[] {
+        {"nativeInit", "()V", reinterpret_cast<void *>(gst_android_init)}
+    };
+
+    QAndroidJniEnvironment jniEnv;
+    if (jniEnv->ExceptionCheck()) {
+        jniEnv->ExceptionDescribe();
+        jniEnv->ExceptionClear();
+    }
+
+    jclass objectClass = jniEnv->FindClass(kJniClassName);
+    if(!objectClass) {
+        qWarning() << "Couldn't find class:" << kJniClassName;
+        return;
+    }
+
+    jint val = jniEnv->RegisterNatives(objectClass, javaMethods, sizeof(javaMethods) / sizeof(javaMethods[0]));
+
+    if (val < 0) {
+        qWarning() << "Error registering methods: " << val;
+    } else {
+        qDebug() << "Main Native Functions Registered";
+    }
+
+    if (jniEnv->ExceptionCheck()) {
+        jniEnv->ExceptionDescribe();
+        jniEnv->ExceptionClear();
+    }
+}
 jint JNI_OnLoad(JavaVM* vm, void* reserved)
 {
     Q_UNUSED(reserved);
@@ -91,6 +172,12 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
         return -1;
     }
 
+    setNativeMethods();
+
+#if defined(QGC_GST_STREAMING)
+    // Tell the androidmedia plugin about the Java VM
+    gst_amc_jni_set_java_vm(vm);
+#endif
     QSerialPort::setNativeMethods();
 
     return JNI_VERSION_1_6;

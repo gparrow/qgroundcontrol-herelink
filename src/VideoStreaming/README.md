@@ -77,12 +77,12 @@ Create a directory named "gstreamer-1.0-android-universal-1.14.4" under the root
 qgroundcontrol
 ├── gstreamer-1.0-android-universal-1.14.4
 │   │
-│   ├──armv7
-│   │   ├── etc
-│   │   ├── include
-│   │   ├── lib
-│   │   └── share
-│   ├──x86
+│   ├──armv7
+│   │   ├── etc
+│   │   ├── include
+│   │   ├── lib
+│   │   └── share
+│   ├──x86
 ```
 ### Windows
 

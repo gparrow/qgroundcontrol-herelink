@@ -34,6 +34,7 @@ public:
     DEFINE_SETTINGFACT(rtspTimeout)
     DEFINE_SETTINGFACT(streamEnabled)
     DEFINE_SETTINGFACT(disableWhenDisarmed)
+	DEFINE_SETTINGFACT(lowLatencyMode)
     DEFINE_SETTINGFACT(videoResolution)
     DEFINE_SETTINGFACT(cameraId)
     DEFINE_SETTINGFACT(saveSdCardEnable)

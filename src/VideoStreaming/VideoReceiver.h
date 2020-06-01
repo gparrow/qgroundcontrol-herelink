@@ -65,6 +65,10 @@ public:
 
     virtual void        setShowFullScreen   (bool show) { _showFullScreen = show; emit showFullScreenChanged(); }
 
+#if defined(QGC_GST_STREAMING)
+    void                  setVideoSink      (GstElement* videoSink);
+#endif
+
 signals:
     void videoRunningChanged                ();
     void imageFileChanged                   ();
@@ -120,6 +124,7 @@ protected:
 
     static gboolean             _onBusMessage           (GstBus* bus, GstMessage* message, gpointer user_data);
     static GstPadProbeReturn    _unlinkCallBack         (GstPad* pad, GstPadProbeInfo* info, gpointer user_data);
+    static GstPadProbeReturn    _videoSinkProbe         (GstPad* pad, GstPadProbeInfo* info, gpointer user_data);
     static GstPadProbeReturn    _keyframeWatch          (GstPad* pad, GstPadProbeInfo* info, gpointer user_data);
 
     virtual void                _detachRecordingBranch  (GstPadProbeInfo* info);

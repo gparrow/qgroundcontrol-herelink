@@ -1,5 +1,6 @@
 package org.mavlink.qgroundcontrol;
 
+
 /* Copyright 2013 Google Inc.
  *
  * This library is free software; you can redistribute it and/or
@@ -306,55 +307,55 @@ public class QGCActivity extends QtActivity
         }
     }
 
-    /// Returns array of device info for each unopened device.
-    /// @return Device info format DeviceName:Company:ProductId:VendorId
-    public static String[] availableDevicesInfo()
-    {
-        updateCurrentDrivers();
+/// Returns array of device info for each unopened device.
+/// @return Device info format DeviceName:Company:ProductId:VendorId
+public static String[] availableDevicesInfo()
+{
+    updateCurrentDrivers();
 
-        if (_drivers.size() <= 0) {
-            return null;
-        }
-
-        List<String> deviceInfoList = new ArrayList<String>();
-
-        for (int i=0; i<_drivers.size(); i++) {
-            String          deviceInfo;
-            UsbSerialDriver driver = _drivers.get(i);
-
-            if (driver.permissionStatus() != UsbSerialDriver.permissionStatusSuccess) {
-                continue;
-            }
-
-            UsbDevice device = driver.getDevice();
-
-            deviceInfo = device.getDeviceName() + ":";
-
-            if (driver instanceof FtdiSerialDriver) {
-                deviceInfo = deviceInfo + "FTDI:";
-            } else if (driver instanceof CdcAcmSerialDriver) {
-                deviceInfo = deviceInfo + "Cdc Acm:";
-            } else if (driver instanceof Cp2102SerialDriver) {
-                deviceInfo = deviceInfo + "Cp2102:";
-            } else if (driver instanceof ProlificSerialDriver) {
-                deviceInfo = deviceInfo + "Prolific:";
-            } else {
-                deviceInfo = deviceInfo + "Unknown:";
-            }
-
-            deviceInfo = deviceInfo + Integer.toString(device.getProductId()) + ":";
-            deviceInfo = deviceInfo + Integer.toString(device.getVendorId()) + ":";
-
-            deviceInfoList.add(deviceInfo);
-        }
-
-        String[] rgDeviceInfo = new String[deviceInfoList.size()];
-        for (int i=0; i<deviceInfoList.size(); i++) {
-            rgDeviceInfo[i] = deviceInfoList.get(i);
-        }
-
-        return rgDeviceInfo;
+    if (_drivers.size() <= 0) {
+        return null;
     }
+
+    List<String> deviceInfoList = new ArrayList<String>();
+
+    for (int i=0; i<_drivers.size(); i++) {
+        String          deviceInfo;
+        UsbSerialDriver driver = _drivers.get(i);
+
+        if (driver.permissionStatus() != UsbSerialDriver.permissionStatusSuccess) {
+            continue;
+        }
+
+        UsbDevice device = driver.getDevice();
+
+        deviceInfo = device.getDeviceName() + ":";
+
+        if (driver instanceof FtdiSerialDriver) {
+            deviceInfo = deviceInfo + "FTDI:";
+        } else if (driver instanceof CdcAcmSerialDriver) {
+            deviceInfo = deviceInfo + "Cdc Acm:";
+        } else if (driver instanceof Cp2102SerialDriver) {
+            deviceInfo = deviceInfo + "Cp2102:";
+        } else if (driver instanceof ProlificSerialDriver) {
+            deviceInfo = deviceInfo + "Prolific:";
+        } else {
+            deviceInfo = deviceInfo + "Unknown:";
+        }
+
+        deviceInfo = deviceInfo + Integer.toString(device.getProductId()) + ":";
+        deviceInfo = deviceInfo + Integer.toString(device.getVendorId()) + ":";
+
+        deviceInfoList.add(deviceInfo);
+    }
+
+    String[] rgDeviceInfo = new String[deviceInfoList.size()];
+    for (int i=0; i<deviceInfoList.size(); i++) {
+        rgDeviceInfo[i] = deviceInfoList.get(i);
+    }
+
+    return rgDeviceInfo;
+}
 
     public static String getSdcardPath() {
         StorageManager storageManager = (StorageManager)_instance.getSystemService(Activity.STORAGE_SERVICE);
@@ -763,4 +764,3 @@ public class QGCActivity extends QtActivity
         }, 0, 3000);
     }
 }
-

@@ -62,7 +62,6 @@ VideoManager::setToolbox(QGCToolbox *toolbox)
    connect(_videoSettings->rtspUrl(),       &Fact::rawValueChanged, this, &VideoManager::_rtspUrlChanged);
    connect(_videoSettings->tcpUrl(),        &Fact::rawValueChanged, this, &VideoManager::_tcpUrlChanged);
    connect(_videoSettings->aspectRatio(),   &Fact::rawValueChanged, this, &VideoManager::_aspectRatioChanged);
-
    MultiVehicleManager *pVehicleMgr = qgcApp()->toolbox()->multiVehicleManager();
    connect(pVehicleMgr, &MultiVehicleManager::activeVehicleChanged, this, &VideoManager::_setActiveVehicle);
 
@@ -166,7 +165,13 @@ void
 VideoManager::_tcpUrlChanged()
 {
     _restartVideo();
+//-----------------------------------------------------------------------------
 }
+
+//void VideoManager::_lowLatencyModeChanged()
+//{
+ //   restartVideo();
+//}
 
 //-----------------------------------------------------------------------------
 bool
@@ -216,16 +221,23 @@ VideoManager::_updateSettings()
     if(_activeVehicle && _activeVehicle->dynamicCameras()) {
         QGCVideoStreamInfo* pInfo = _activeVehicle->dynamicCameras()->currentStreamInstance();
         if(pInfo) {
+            qCDebug(VideoManagerLog) << "Configure primary stream: " << pInfo->uri();
             switch(pInfo->type()) {
                 case VIDEO_STREAM_TYPE_RTSP:
+                    _videoReceiver->setUri(pInfo->uri());
+                    _toolbox->settingsManager()->videoSettings()->videoSource()->setRawValue(VideoSettings::videoSourceRTSP);
+                    break;
                 case VIDEO_STREAM_TYPE_TCP_MPEG:
                     _videoReceiver->setUri(pInfo->uri());
+                    _toolbox->settingsManager()->videoSettings()->videoSource()->setRawValue(VideoSettings::videoSourceTCP);
                     break;
                 case VIDEO_STREAM_TYPE_RTPUDP:
                     _videoReceiver->setUri(QStringLiteral("udp://0.0.0.0:%1").arg(pInfo->uri()));
+                    //_toolbox->settingsManager()->videoSettings()->videoSource()->setRawValue(VideoSettings::videoSourceUDPH264);
                     break;
                 case VIDEO_STREAM_TYPE_MPEG_TS_H264:
                     _videoReceiver->setUri(QStringLiteral("mpegts://0.0.0.0:%1").arg(pInfo->uri()));
+                    _toolbox->settingsManager()->videoSettings()->videoSource()->setRawValue(VideoSettings::videoSourceMPEGTS);
                     break;
                 default:
                     _videoReceiver->setUri(pInfo->uri());
@@ -237,6 +249,8 @@ VideoManager::_updateSettings()
     QString source = _videoSettings->videoSource()->rawValue().toString();
     if (source == VideoSettings::videoSourceUDP)
         _videoReceiver->setUri(QStringLiteral("udp://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));
+    else if (source == VideoSettings::videoSourceMPEGTS)
+        _videoReceiver->setUri(QStringLiteral("mpegts://0.0.0.0:%1").arg(_videoSettings->udpPort()->rawValue().toInt()));
     else if (source == VideoSettings::videoSourceRTSP)
         _videoReceiver->setUri(_videoSettings->rtspUrl()->rawValue().toString());
     else if (source == VideoSettings::videoSourceTCP)
@@ -264,6 +278,7 @@ void
 VideoManager::_setActiveVehicle(Vehicle* vehicle)
 {
     if(_activeVehicle) {
+        //disconnect(_activeVehicle, &Vehicle::connectionLostChanged, this, &VideoManager::_connectionLostChanged);
         if(_activeVehicle->dynamicCameras()) {
             QGCCameraControl* pCamera = _activeVehicle->dynamicCameras()->currentCameraInstance();
             if(pCamera) {
@@ -274,6 +289,7 @@ VideoManager::_setActiveVehicle(Vehicle* vehicle)
     }
     _activeVehicle = vehicle;
     if(_activeVehicle) {
+        //connect(_activeVehicle, &Vehicle::connectionLostChanged, this, &VideoManager::_connectionLostChanged);
         if(_activeVehicle->dynamicCameras()) {
             connect(_activeVehicle->dynamicCameras(), &QGCCameraManager::streamChanged, this, &VideoManager::_restartVideo);
             QGCCameraControl* pCamera = _activeVehicle->dynamicCameras()->currentCameraInstance();
@@ -285,6 +301,15 @@ VideoManager::_setActiveVehicle(Vehicle* vehicle)
     emit autoStreamConfiguredChanged();
     _restartVideo();
 }
+
+//----------------------------------------------------------------------------------------
+//void VideoManager::_connectionLostChanged(bool connectionLost)
+//{
+ //   if(connectionLost) {
+  //      //-- Disable full screen video if connection is lost
+   //     setfullScreen(false);
+    //}
+//}
 
 //----------------------------------------------------------------------------------------
 void

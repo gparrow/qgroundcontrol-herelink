@@ -55,6 +55,7 @@ public:
     QString     videoSourceID       () { return _videoSourceID; }
     double      aspectRatio         ();
     bool        autoStreamConfigured();
+    void        restartVideo        ();
 
     VideoReceiver*  videoReceiver   () { return _videoReceiver; }
     VideoStreamControl* videoStreamControl () { return _videoStreamControl; }

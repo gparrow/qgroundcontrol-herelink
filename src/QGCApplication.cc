@@ -26,6 +26,8 @@
 #include <QStringListModel>
 #include <QRegularExpression>
 
+#include <QQuickWindow>
+
 #ifdef QGC_ENABLE_BLUETOOTH
 #include <QBluetoothLocalDevice>
 #endif
@@ -810,6 +812,14 @@ void QGCApplication::_currentVersionDownloadFinished(QString remoteFile, QString
 
     _currentVersionDownload->deleteLater();
 #endif
+}
+
+QQuickItem* QGCApplication::mainRootWindow()
+{
+    if(!_mainRootWindow) {
+        _mainRootWindow = reinterpret_cast<QQuickItem*>(_rootQmlObject());
+    }
+    return _mainRootWindow;
 }
 
 void QGCApplication::_currentVersionDownloadError(QString errorMsg)

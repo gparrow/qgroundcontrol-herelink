@@ -1,6 +1,7 @@
+set(EXTRA_LIBRARIES)
 
-set(EXTRA_SRC)
-if(VIDEO)
+if (GST_FOUND)
+	set(EXTRA_LIBRARIES ${GST_LIBRARIES})
 	list(APPEND EXTRA_SRC
 		gstqtvideosink/delegates/basedelegate.cpp
 		gstqtvideosink/delegates/qtquick2videosinkdelegate.cpp
@@ -23,18 +24,28 @@ if(VIDEO)
 endif()
 
 add_library(VideoStreaming
-	VideoItem.cc
-	VideoReceiver.cc
-	VideoStreaming.cc
-	VideoSurface.cc
-	${EXTRA_SRC}
+    GLVideoItemStub.cc
+    GLVideoItemStub.h
+    gstqgc.c
+    gstqgcvideosinkbin.c
+    SubtitleWriter.cc
+    SubtitleWriter.h
+    VideoReceiver.cc
+    VideoReceiver.h
+    VideoStreaming.cc
+    VideoStreaming.h
+    VideoManager.cc
+    VideoManager.h
 )
 
 target_link_libraries(VideoStreaming
+        PRIVATE
+                gst_plugins_good
 	PUBLIC
 		qgc
-
 		Qt5::Multimedia
+		Qt5::OpenGL
+		${EXTRA_LIBRARIES}
 )
 
 target_include_directories(VideoStreaming INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})

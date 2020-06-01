@@ -507,6 +507,7 @@ void Vehicle::_commonInit(void)
     if (sub() && _settingsManager->videoSettings()->videoSource()->rawValue() == VideoSettings::videoDisabled)
     {
         _settingsManager->videoSettings()->videoSource()->setRawValue(VideoSettings::videoSourceUDP);
+		 _settingsManager->videoSettings()->lowLatencyMode()->setRawValue(true);
     }
 
     //-- Airspace Management
